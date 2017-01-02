@@ -4,16 +4,29 @@ const inputUser = document.querySelector('input.user');
 const inputAmount = document.querySelector('input.amount');
 const inputCurrency = document.querySelector('input.currency');
 
+let options = {};
+
 inputUser.onkeyup = (() => {
-  record.set('user', inputUser.value);
+  options.userID = inputUser.value;
 });
 
 inputAmount.onkeyup = (() => {
-  record.set('amount', inputAmount.value);
+  options.amount = inputAmount.value;
 });
 
 inputCurrency.onkeyup = (() => {
-  record.set('currency', inputCurrency.value);
+  options.currency = inputCurrency.value;
 });
 
+// create functions for buttons to emit events 'checkBalance' & 'updateBalance'
+const checkBalance = () => {
+  console.log('options', options);
+  client.event.emit('checkBalance', options)
+}
 
+const updateBalance = () => {  
+  console.log('options', options);
+  client.event.emit('updateBalance', options)
+}
+
+// record names: 'balances/${userID}/${type}'
