@@ -7,10 +7,10 @@ const testData = require('../test/testBalances');
 // delete me - test data ///////////////////////////////////////////////////
 const initTestData = () => {
   const userID = '00';
-  const type = 'BTC';
-  const amount = testData['00'].BTC;
-  const balance = client.record.getRecord(`balances/${userID}/${type}`);
-  balance.set('amount', amount);
+  const type = 'ETH';
+  const amount = testData['00'].ETH;
+  const balance = client.record.getRecord(`balances/${userID}`);
+  balance.set(`${type}.amount`, amount);
 };
 
 initTestData();
@@ -23,12 +23,12 @@ initTestData();
  */
 module.exports.checkBalance = () => {
   client.event.subscribe('checkBalance', (data) => {
-    const balance = client.record.getRecord(`balances/${data.userID}/${data.currency}`);
+    const balance = client.record.getRecord(`balances/${data.userID}`);
     balance.whenReady(balance => {
-      data.amount = balance.get('amount');
+      data.amount = balance.get(`${data.currency}.amount`);
       if (!data.amount) {
         data.amount = 0;
-        balance.set('amount', data.amount);
+        balance.set(`${data.currency}.amount`, data.amount);
       }
       client.event.emit('returnBalance', data);
     });
@@ -47,11 +47,11 @@ module.exports.updateBalance = () => {
       console.log('no defined change');
       data.update = '0';
     }
-    const balance = client.record.getRecord(`balances/${data.userID}/${data.currency}`);
+    const balance = client.record.getRecord(`balances/${data.userID}`);
     balance.whenReady(balance => {
       const change = data.update;
-      const amount = Big(balance.get('amount')).plus(change);
-      balance.set('amount', amount);
+      const amount = Big(balance.get(`${data.currency}.amount`)).plus(change);
+      balance.set(`${data.currency}.amount`, amount);
       data.amount = Number(amount);
       client.event.emit('returnBalance', data);
     })
