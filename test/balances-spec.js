@@ -1,10 +1,19 @@
-var assert = require('assert');
-var testData = require('./testBalances');
+const assert = require('assert');
+const testData = require('./testBalances');
 
-console.log("data", testData);
+console.log('data', testData);
 
-describe('balances', function() {
-  describe('check balance', function() {
+const initTestData = () => {
+  const userID = '00';
+  const type = 'BTC';
+  const amount = testData['00'].BTC;
+  const balance = client.record.getRecord(`balances/${userID}/${type}`);
+  balance.set('amount', amount);
+};
+initTestData();
+
+describe('balances', function () {
+  describe('check balance', function () {
     it('should return userID on "checkBalance" event', function() {
       assert.equal(-1, [1,2,3].indexOf(4));
     });

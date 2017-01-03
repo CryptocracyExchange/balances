@@ -1,4 +1,4 @@
-const client = deepstream('localhost:6020').login();
+const client = deepstream('localhost:6020').login(); // eslint-no-undef
 
 const inputUser = document.querySelector('input.user');
 const inputAmount = document.querySelector('input.amount');
@@ -15,7 +15,7 @@ inputAmount.onkeyup = (() => {
 });
 
 inputCurrency.onkeyup = (() => {
-  options.currency = inputCurrency.value;
+  options.currency = inputCurrency.value.toUpperCase();
 });
 
 // create functions for buttons to emit events 'checkBalance' & 'updateBalance'
@@ -30,3 +30,11 @@ const updateBalance = () => {
 }
 
 // record names: 'balances/${userID}/${type}'
+
+const balanceListener = () => {
+  client.event.subscribe('returnBalance', (data) => {
+    console.log('user balance is', data)
+  })
+}
+
+balanceListener();
