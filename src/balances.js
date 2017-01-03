@@ -4,6 +4,7 @@ const client = deepstream(url).login();
 const Big = require('big.js');
 const testData = require('../test/testBalances');
 
+// delete me - test data ///////////////////////////////////////////////////
 const initTestData = () => {
   const userID = '00';
   const type = 'BTC';
@@ -13,9 +14,14 @@ const initTestData = () => {
 };
 
 initTestData();
+// end of delete me ////////////////////////////////////////////////////////
 
+/* checkBalance() 
+ * Takes an object containing the desired unique userID ('userID')
+ * and the currency type ('currency'). It then emits an event containing the same userID, currency type and the 
+ * requested balance amount ('amount'). If no funds exist, creates record and sets to 0.
+ */
 module.exports.checkBalance = () => {
-  // need some kind of error handling
   client.event.subscribe('checkBalance', (data) => {
     const balance = client.record.getRecord(`balances/${data.userID}/${data.currency}`);
     balance.whenReady(balance => {
@@ -30,6 +36,11 @@ module.exports.checkBalance = () => {
   });
 };
 
+/* updateBalance() 
+ * Takes an object containing the desired unique userID ('userID'), the increment of change ('update')
+ * and the currency type ('currency'). It then emits an event containing the same userID, currency type and the 
+ * updated balance amount ('amount'). If no 'update' is passed, defaults to 0.
+ */
 module.exports.updateBalance = () => {
   client.event.subscribe('updateBalance', (data) => {
     if (!data.update) {
