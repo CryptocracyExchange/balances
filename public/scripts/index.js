@@ -6,7 +6,7 @@ const inputCurrency = document.querySelector('input.currency');
 let options = {};
 
 inputUser.onkeyup = (() => {
-  options.userID = inputUser.value;
+  options.userID = inputUser.value.toString();
 });
 inputAmount.onkeyup = (() => {
   options.update = inputAmount.value;

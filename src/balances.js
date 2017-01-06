@@ -7,8 +7,8 @@ const testData = require('../test/testBalances');
 // delete me - test data ///////////////////////////////////////////////////
 const initTestData = () => {
   const userID = '00';
-  const type = 'ETH';
-  const amount = testData['00'].ETH;
+  const type = 'BTC';
+  const amount = testData['00'].BTC;
   const balance = client.record.getRecord(`balances/${userID}`);
   balance.set(`${type}.amount`, amount);
 };
