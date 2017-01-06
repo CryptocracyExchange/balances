@@ -1,6 +1,6 @@
 const client = deepstream('localhost:6020').login();
 const inputUser = document.querySelector('input.user');
-const inputAmount = document.querySelector('input.amount');
+const inputChange = document.querySelector('input.change');
 const inputCurrency = document.querySelector('input.currency');
 
 let options = {};
@@ -8,8 +8,8 @@ let options = {};
 inputUser.onkeyup = (() => {
   options.userID = inputUser.value.toString();
 });
-inputAmount.onkeyup = (() => {
-  options.update = inputAmount.value;
+inputChange.onkeyup = (() => {
+  options.update = inputChange.value;
 });
 inputCurrency.onkeyup = (() => {
   options.currency = inputCurrency.value.toUpperCase();
@@ -32,6 +32,7 @@ const updateBalance = () => {
 const balanceListener = () => {
   client.event.subscribe('returnBalance', (data) => {
     console.log('user balance is', data);
+ 
   })
 }
 

@@ -8,9 +8,9 @@ const testData = require('../test/testBalances');
 const initTestData = () => {
   const userID = '00';
   const type = 'BTC';
-  const amount = testData['00'].BTC;
-  const balance = client.record.getRecord(`balances/${userID}`);
-  balance.set(`${type}.amount`, amount);
+  const balance = testData['00'].BTC;
+  const balanceRecord = client.record.getRecord(`balances/${userID}`);
+  balanceRecord.set(`${type}.balance`, balance);
 };
 
 initTestData();
@@ -23,16 +23,18 @@ initTestData();
  */
 module.exports.checkBalance = () => {
   client.event.subscribe('checkBalance', (data) => {
-    const balance = client.record.getRecord(`balances/${data.userID}`);
-    balance.whenReady(balance => {
-      data.amount = balance.get(`${data.currency}.amount`);
-      if (!data.amount) {
-        data.amount = 0;
-        balance.set(`${data.currency}.amount`, data.amount);
+    const balanceRecord = client.record.getRecord(`balances/${data.userID}`);
+    balanceRecord.whenReady(balance => {
+      data.balance = +balanceRecord.get(`${data.currency}.balance`);
+
+      if (!data.balance) {
+        data.balance = 0;
+        balanceRecord.set(`${data.currency}.balance`, data.balance);
       }
       client.event.emit('returnBalance', data);
+
     });
-    balance.discard();
+    balanceRecord.discard();
   });
 };
 
@@ -47,14 +49,15 @@ module.exports.updateBalance = () => {
       console.log('no defined change');
       data.update = '0';
     }
-    const balance = client.record.getRecord(`balances/${data.userID}`);
-    balance.whenReady(balance => {
+    const balanceRecord = client.record.getRecord(`balances/${data.userID}`);
+    balanceRecord.whenReady(balanceRecord => {
       const change = data.update;
-      const amount = Big(balance.get(`${data.currency}.amount`)).plus(change);
-      balance.set(`${data.currency}.amount`, amount);
-      data.amount = Number(amount);
+      const balance = Big(balanceRecord.get(`${data.currency}.balance`)).plus(change);
+      balanceRecord.set(`${data.currency}.balance`, balance);
+      data.balance = +balance;
       client.event.emit('returnBalance', data);
+      data.update = 0;
     })
-    balance.discard();
+    balanceRecord.discard();
   });
 };
