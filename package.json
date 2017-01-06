@@ -5,7 +5,8 @@
   "main": "./src",
   "scripts": {
     "test": "mocha",
-    "start": "nodemon ./src/index.js"
+    "start-prod": "NODE_ENV=prod node ./src/index.js", 
+    "start-dev": "nodemon ./src/index.js"
   },
   "repository": {
     "type": "git",

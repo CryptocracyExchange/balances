@@ -6,10 +6,9 @@ const client = deepstream(url).login();
 const testData = require('./testBalances');
 const balances = require('../src/balances');
 
-console.log('data', testData);
+// console.log('data', testData);
 
 // test data
-
 const initTestData = () => {
   const userID = '00';
   const type = 'BTC';
@@ -20,23 +19,13 @@ const initTestData = () => {
 
 initTestData();
 
-
-// const balanceListener = () => {
-//   return client.event.subscribe('returnBalance', (data) => {
-//     return data
-//   })
-// }
-
-
-
-
 describe('balances', function () {
   describe('checkBalance()', function () {
     it('should return balance on "checkBalance" event', function(done) {
       client.event.emit('checkBalance', {userID: '00', currency: 'BTC'});
       client.event.subscribe('returnBalance', (data) => {
-        console.log('data', data);
-        assert.equal(2.03, data.amount);
+
+        assert.equal(2.03, data.balance);
         done();
       })
     });
@@ -49,15 +38,15 @@ describe('balances', function () {
     //   })
     // });
   });
-  describe('update balance', function() {
-    it('should update current user balance on "updateBalance" event', function(done) {
-      client.event.emit('updateBalance', {userID: '00', update: '2', currency: 'BTC'});
-      setTimeout(() => {
-        client.event.subscribe('returnBalance', function (data) {
-          assert.equal(4.03, data.amount);
-          done();
-        })
-      }, 1200)
-    });
-  });
+  // describe('update balance', function() {
+  //   it('should update current user balance on "updateBalance" event', function(done) {
+  //     client.event.emit('updateBalance', {userID: '00', update: '2', currency: 'BTC'});
+  //     setTimeout(() => {
+  //       client.event.subscribe('returnBalance', function (data) {
+  //         assert.equal(4.03, data.amount);
+  //         done();
+  //       })
+  //     }, 1200)
+  //   });
+  // });
 });

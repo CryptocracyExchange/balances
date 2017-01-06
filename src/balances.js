@@ -1,25 +1,12 @@
-const url = 'localhost:6020';
+const url = provess.env.NODE_ENV === 'prod' ? 'deepstream' : 'localhost';
 const deepstream = require('deepstream.io-client-js');
-const client = deepstream(url).login();
+const client = deepstream(url + ':6020').login({ role: process.env.DEEPSTREAM_AUTH_ROLE, username: process.env.DEEPSTREAM_AUTH_USERNAME, password: process.env.DEEPSTREAM_AUTH_PASSWORD });
 const Big = require('big.js');
-const testData = require('../test/testBalances');
-
-// delete me - test data ///////////////////////////////////////////////////
-const initTestData = () => {
-  const userID = '00';
-  const type = 'BTC';
-  const balance = testData['00'].BTC;
-  const balanceRecord = client.record.getRecord(`balances/${userID}`);
-  balanceRecord.set(`${type}.balance`, balance);
-};
-
-initTestData();
-// end of delete me ////////////////////////////////////////////////////////
 
 /* checkBalance() 
  * Takes an object containing the desired unique userID ('userID')
  * and the currency type ('currency'). It then emits an event containing the same userID, currency type and the 
- * requested balance amount ('amount'). If no funds exist, creates record and sets to 0.
+ * requested balance amount ('balance'). If no funds exist, creates record and sets to 0.
  */
 module.exports.checkBalance = () => {
   client.event.subscribe('checkBalance', (data) => {
@@ -32,7 +19,6 @@ module.exports.checkBalance = () => {
         balanceRecord.set(`${data.currency}.balance`, data.balance);
       }
       client.event.emit('returnBalance', data);
-
     });
     balanceRecord.discard();
   });
@@ -41,7 +27,7 @@ module.exports.checkBalance = () => {
 /* updateBalance() 
  * Takes an object containing the desired unique userID ('userID'), the increment of change ('update')
  * and the currency type ('currency'). It then emits an event containing the same userID, currency type and the 
- * updated balance amount ('amount'). If no 'update' is passed, defaults to 0.
+ * updated balance amount ('balance'). If no 'update' is passed, defaults to 0.
  */
 module.exports.updateBalance = () => {
   client.event.subscribe('updateBalance', (data) => {
