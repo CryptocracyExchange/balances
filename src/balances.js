@@ -1,9 +1,19 @@
-const url = process.env.NODE_ENV === 'prod' ? 'deepstream' : 'localhost';
-const deepstream = require('deepstream.io-client-js');
-const client = deepstream(url + ':6020').login({ role: process.env.DEEPSTREAM_AUTH_ROLE, username: process.env.DEEPSTREAM_AUTH_USERNAME, password: process.env.DEEPSTREAM_AUTH_PASSWORD });
 const Big = require('big.js');
 
-/* checkBalance() 
+let client;
+
+if (process.env.NODE_ENV === 'prod' || process.env.NODE_ENV === 'dev') {
+  client = require('./config');
+  const url = process.env.NODE_ENV === 'prod' ? 'deepstream' : 'localhost';
+  client(`${url}:6020`);
+  client.login({
+    role: process.env.DEEPSTREAM_AUTH_ROLE,
+    username: process.env.DEEPSTREAM_AUTH_USERNAME,
+    password: process.env.DEEPSTREAM_AUTH_PASSWORD,
+  });
+}
+
+/* checkBalance()
  * Takes an object containing the desired unique userID ('userID')
  * and the currency type ('currency'). It then emits an event containing the same userID, currency type and the 
  * requested balance amount ('balance'). If no funds exist, creates record and sets to 0.

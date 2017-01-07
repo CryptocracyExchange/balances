@@ -4,9 +4,9 @@
   "description": "cryptocracy balances backend service",
   "main": "./src",
   "scripts": {
-    "test": "mocha",
-    "start-prod": "NODE_ENV=prod node ./src/index.js", 
-    "start-dev": "nodemon ./src/index.js"
+    "test": "mocha ./test",
+    "start-prod": "NODE_ENV=prod node ./src/index.js",
+    "start-dev": "NODE_ENV=dev nodemon ./src/index.js"
   },
   "repository": {
     "type": "git",
@@ -26,6 +26,7 @@
     "morgan": "^1.7.0"
   },
   "devDependencies": {
+    "deepstream.io": "^2.1.2",
     "eslint": "^3.12.2",
     "eslint-config-airbnb": "^13.0.0",
     "eslint-config-airbnb-base": "^11.0.0",
