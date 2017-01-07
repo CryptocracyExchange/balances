@@ -1,22 +1,11 @@
 const Big = require('big.js');
 
-const deepstream = require('deepstream.io-client-js');
-
-const url = process.env.NODE_ENV === 'prod' ? 'deepstream' : 'localhost';
-const client = deepstream(`${url}:6020`);
-const auth = process.env.NODE_ENV === 'prod' ? {
-  role: process.env.DEEPSTREAM_AUTH_ROLE,
-  username: process.env.DEEPSTREAM_AUTH_USERNAME,
-  password: process.env.DEEPSTREAM_AUTH_PASSWORD,
-} : {};
-client.login(auth);
-
 /* checkBalance()
  * Takes an object containing the desired unique userID ('userID')
  * and the currency type ('currency'). It then emits an event containing the same userID, currency type and the
  * requested balance amount ('balance'). If no funds exist, creates record and sets to 0.
  */
-module.exports.checkBalance = () => {
+module.exports.checkBalance = (client) => {
   client.event.subscribe('checkBalance', (data) => {
     const balanceRecord = client.record.getRecord(`balances/${data.userID}`);
     balanceRecord.whenReady(balance => {
@@ -37,7 +26,7 @@ module.exports.checkBalance = () => {
  * and the currency type ('currency'). It then emits an event containing the same userID, currency type and the 
  * updated balance amount ('balance'). If no 'update' is passed, defaults to 0.
  */
-module.exports.updateBalance = () => {
+module.exports.updateBalance = (client) => {
   client.event.subscribe('updateBalance', (data) => {
     if (!data.update) {
       console.log('no defined change');
