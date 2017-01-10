@@ -7,13 +7,13 @@ const Big = require('big.js');
  */
 module.exports.checkBalance = (client) => {
   client.event.subscribe('checkBalance', (data) => {
+    console.log('options', data);
     const balanceRecord = client.record.getRecord(`balances/${data.userID}`);
     balanceRecord.whenReady(balance => {
-      data.balance = +balanceRecord.get(`${data.currency}.balance`);
-
+      data.balance = +balanceRecord.get(`${data.currency}`);
       if (!data.balance) {
         data.balance = 0;
-        balanceRecord.set(`${data.currency}.balance`, data.balance);
+        balanceRecord.set(`${data.currency}`, data.balance);
       }
       client.event.emit('returnBalance', data);
     });
@@ -30,13 +30,13 @@ module.exports.updateBalance = (client) => {
   client.event.subscribe('updateBalance', (data) => {
     if (!data.update) {
       console.log('no defined change');
-      data.update = '0';
+      data.update = 0;
     }
     const balanceRecord = client.record.getRecord(`balances/${data.userID}`);
     balanceRecord.whenReady(balanceRecord => {
-      const change = data.update;
-      const balance = Big(balanceRecord.get(`${data.currency}.balance`)).plus(change);
-      balanceRecord.set(`${data.currency}.balance`, balance);
+      const change = +data.update;
+      const balance = Big(balanceRecord.get(`${data.currency}`)).plus(change);
+      balanceRecord.set(`${data.currency}`, balance);
       data.balance = +balance;
       client.event.emit('returnBalance', data);
       data.update = 0;
