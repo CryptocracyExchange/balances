@@ -27,5 +27,6 @@ const auth = process.env.NODE_ENV === 'prod' ? {
 } : {};
 client.login(auth);
 
+events.initBalance(client);
 events.checkBalance(client);
 events.updateBalance(client);

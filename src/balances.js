@@ -1,5 +1,22 @@
 const Big = require('big.js');
 
+
+
+module.exports.initBalance = (client) => {
+  client.event.subscribe('initBalance', (data) => {
+    const balanceRecord = client.record.getRecord(`balances/${data.userID}`);
+    balanceRecord.whenReady(balance => {
+      balance.set({
+        'BTC': { available: 0, actual: 0 },
+        'LTC': { available: 0, actual: 0 },
+        'DOGE': { available: 0, actual: 0 }
+      })
+      console.log('initialized balances');
+    })
+    balanceRecord.discard();
+  })
+}
+
 /* checkBalance()
  * Takes an object containing the desired unique userID ('userID')
  * and the currency type ('currency'). It then emits an event containing the same userID, currency type and the
@@ -10,10 +27,12 @@ module.exports.checkBalance = (client) => {
     console.log('options', data);
     const balanceRecord = client.record.getRecord(`balances/${data.userID}`);
     balanceRecord.whenReady(balance => {
-      data.balance = +balanceRecord.get(`${data.currency}`);
+      console.log('bal', balance.get());
+      data.balance = +balance.get(`${data.currency}.${data.balanceType}`);
       if (!data.balance) {
         data.balance = 0;
-        balanceRecord.set(`${data.currency}`, data.balance);
+        balance.set(`${data.currency}.available`, +data.balance);
+        balance.set(`${data.currency}.actual`, +data.balance);
       }
       client.event.emit('returnBalance', data);
     });
@@ -35,8 +54,15 @@ module.exports.updateBalance = (client) => {
     const balanceRecord = client.record.getRecord(`balances/${data.userID}`);
     balanceRecord.whenReady(balanceRecord => {
       const change = +data.update;
-      const balance = Big(balanceRecord.get(`${data.currency}`)).plus(change);
-      balanceRecord.set(`${data.currency}`, balance);
+      let balance;
+      if (data.isExternal === true) {
+        balance = Big(balanceRecord.get(`${data.currency}.actual`)).plus(change);
+        balanceRecord.set(`${data.currency}.actual`, +balance);
+        balanceRecord.set(`${data.currency}.available`, +balance);
+      } else {
+        balance = Big(balanceRecord.get(`${data.currency}.${data.balanceType}`)).plus(change);
+        balanceRecord.set(`${data.currency}.${data.balanceType}`, +balance);
+      }
       data.balance = +balance;
       client.event.emit('returnBalance', data);
       data.update = 0;
