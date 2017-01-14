@@ -1,11 +1,11 @@
-const events = require('./balances');
+const BalancesProvider = require('./balances');
 const chalk = require('chalk');
 
 if (process.env.NODE_ENV !== 'prod') {
   const express = require('express');
   const path = require('path');
   const morgan = require('morgan');
-  
+
   const app = express();
   app.use(morgan('combined'));
   app.use('/', express.static(path.join(__dirname, '../public')));
@@ -16,17 +16,21 @@ if (process.env.NODE_ENV !== 'prod') {
   });
 }
 
-const deepstream = require('deepstream.io-client-js');
+const balances = new BalancesProvider({
+  /**
+   * Only use 1 for production!
+   * 0 = logging off
+   * 1 = only log connection events & errors
+   * 2 = also log subscriptions and discards
+   * 3 = log outgoing messages
+   */
+  logLevel: process.env.NODE_ENV === 'prod' ? 1 : 3,
+  deepstreamUrl: `${process.env.NODE_ENV === 'prod' ? 'deepstream' : 'localhost'}:6020`,
+  deepstreamCredentials: process.env.NODE_ENV === 'prod' ? {
+    role: process.env.DEEPSTREAM_AUTH_ROLE,
+    username: process.env.DEEPSTREAM_AUTH_USERNAME,
+    password: process.env.DEEPSTREAM_AUTH_PASSWORD
+  } : {}
+});
 
-const url = process.env.NODE_ENV === 'prod' ? 'deepstream' : 'localhost';
-const client = deepstream(`${url}:6020`);
-const auth = process.env.NODE_ENV === 'prod' ? {
-  role: process.env.DEEPSTREAM_AUTH_ROLE,
-  username: process.env.DEEPSTREAM_AUTH_USERNAME,
-  password: process.env.DEEPSTREAM_AUTH_PASSWORD,
-} : {};
-client.login(auth);
-
-events.initBalance(client);
-events.checkBalance(client);
-events.updateBalance(client);
+balances.start();
