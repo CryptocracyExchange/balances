@@ -28,7 +28,7 @@ Provider.prototype.log = function (message, level) {
   const date = new Date();
   const time = `${date.toLocaleTimeString()}:${date.getMilliseconds()}`;
 
-  console.log(`${time} | ${message}`);
+  console.log(`${time} | Balances | ${message}`);
 };
 
 Provider.prototype._initialiseDeepstreamClient = function () {
@@ -71,7 +71,7 @@ Provider.prototype._ready = function () {
   this._initBalance();
   this._checkBalance();
   this._updateBalance();
-  this.log('wallets provider ready', 1);
+  this.log('Provider ready', 1);
   this.isReady = true;
   this.emit('ready');
 };
