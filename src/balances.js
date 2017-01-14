@@ -104,12 +104,12 @@ Provider.prototype._checkBalance = function () {
     balanceRecord.whenReady(balance => {
       console.log('bal', balance.get());
       data.balance = +balance.get(`${data.currency}.${data.balanceType}`);
-      if (!data.balance) {
-        data.balance = 0;
-        balance.set(`${data.currency}.available`, +data.balance);
-        balance.set(`${data.currency}.actual`, +data.balance);
-      }
-      this._deepstreamClient.event.emit('returnBalance', data);
+      // if (!data.balance) {
+      //   data.balance = 0;
+      //   balance.set(`${data.currency}.available`, +data.balance);
+      //   balance.set(`${data.currency}.actual`, +data.balance);
+      // }
+      client.event.emit('returnBalance', data);
     });
     balanceRecord.discard();
   });
@@ -117,7 +117,7 @@ Provider.prototype._checkBalance = function () {
 
 /* updateBalance()
  * Takes an object containing the desired unique userID ('userID'), the increment of change ('update')
- * and the currency type ('currency'). It then emits an event containing the same userID, currency type and the 
+ * and the currency type ('currency'). It then emits an event containing the same userID, currency type and the
  * updated balance amount ('balance'). If no 'update' is passed, defaults to 0.
  */
 Provider.prototype._updateBalance = function () {
