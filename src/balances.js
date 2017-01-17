@@ -109,7 +109,7 @@ Provider.prototype._checkBalance = function () {
         balance.set(`${data.currency}.available`, +data.balance);
         balance.set(`${data.currency}.actual`, +data.balance);
       }
-      client.event.emit('returnBalance', data);
+      this._deepstreamClient.event.emit('returnBalance', data);
     });
     balanceRecord.discard();
   });
