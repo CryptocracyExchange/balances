@@ -106,11 +106,11 @@ Provider.prototype._checkBalance = function () {
     const balanceRecord = this._deepstreamClient.record.getRecord(`balances/${data.userID}`);
     balanceRecord.whenReady(balance => {
       data.balance = +balance.get(`${data.currency}.${data.balanceType}`);
-      // if (!data.balance) {
-      //   data.balance = 0;
-      //   balance.set(`${data.currency}.available`, +data.balance);
-      //   balance.set(`${data.currency}.actual`, +data.balance);
-      // } do we need this????
+      if (!data.balance) {
+        data.balance = 0;
+        balance.set(`${data.currency}.available`, +data.balance);
+        balance.set(`${data.currency}.actual`, +data.balance);
+      }
       this._deepstreamClient.event.emit('returnBalance', data);
     });
     balanceRecord.discard();
@@ -125,28 +125,31 @@ Provider.prototype._checkBalance = function () {
 Provider.prototype._updateBalance = function () {
   this._deepstreamClient.event.subscribe('updateBalance', (data) => {
     if (!data.currency || !data.balanceType) {
-      
-    }
-    if (!data.update) {
-      data.update = 0;
-    }
-    const balanceRecord = this._deepstreamClient.record.getRecord(`balances/${data.userID}`);
-    balanceRecord.whenReady(balanceRecord => {
-      const change = +data.update;
-      let balance;
-      if (data.isExternal === true) {
-        balance = Big(balanceRecord.get(`${data.currency}.actual`)).plus(change);
-        balanceRecord.set(`${data.currency}.actual`, +balance);
-        balanceRecord.set(`${data.currency}.available`, +balance);
-      } else {
-        balance = Big(balanceRecord.get(`${data.currency}.${data.balanceType}`)).plus(change);
-        balanceRecord.set(`${data.currency}.${data.balanceType}`, +balance);
-      }
-      data.balance = +balance;
+      data.success = false;
       this._deepstreamClient.event.emit('returnBalance', data);
-      data.update = 0;
-    });
-    balanceRecord.discard();
+    } else  {
+      data.success = true;
+      if (!data.update) {
+        data.update = 0;
+      }
+      const balanceRecord = this._deepstreamClient.record.getRecord(`balances/${data.userID}`);
+      balanceRecord.whenReady(balanceRecord => {
+        const change = +data.update;
+        let balance;
+        if (data.isExternal === true) {
+          balance = Big(balanceRecord.get(`${data.currency}.actual`)).plus(change);
+          balanceRecord.set(`${data.currency}.actual`, +balance);
+          balanceRecord.set(`${data.currency}.available`, +balance);
+        } else {
+          balance = Big(balanceRecord.get(`${data.currency}.${data.balanceType}`)).plus(change);
+          balanceRecord.set(`${data.currency}.${data.balanceType}`, +balance);
+        }
+        data.balance = +balance;
+        this._deepstreamClient.event.emit('returnBalance', data);
+        data.update = 0;
+      });
+      balanceRecord.discard();
+    }
   });
 };
 
