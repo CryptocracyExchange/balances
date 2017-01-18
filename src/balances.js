@@ -108,8 +108,8 @@ Provider.prototype._checkBalance = function () {
       data.balance = +balance.get(`${data.currency}.${data.balanceType}`);
       if (!data.balance) {
         data.balance = 0;
-        balance.set(`${data.currency}.available`, +data.balance);
-        balance.set(`${data.currency}.actual`, +data.balance);
+        balance.set(`${data.currency}.${data.balanceType}`, +data.balance);
+        // balance.set(`${data.currency}.actual`, +data.balance);
       }
       this._deepstreamClient.event.emit('returnBalance', data);
     });
@@ -124,10 +124,12 @@ Provider.prototype._checkBalance = function () {
  */
 Provider.prototype._updateBalance = function () {
   this._deepstreamClient.event.subscribe('updateBalance', (data) => {
-    if (!data.currency || !data.balanceType) {
+    if (!data.currency || !data.balanceType && data.isExternal === false || !data.userID) {
+      console.log('update failed')
       data.success = false;
       this._deepstreamClient.event.emit('returnBalance', data);
     } else  {
+      console.log('update success')
       data.success = true;
       if (!data.update) {
         data.update = 0;
