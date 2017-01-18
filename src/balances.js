@@ -77,6 +77,10 @@ Provider.prototype._ready = function () {
 };
 
 
+/* initBalance()
+ * Takes an object containing the desired unique userID ('userID') 
+ * creates record for each currency type and sets their available and actual balances to 0.
+ */
 Provider.prototype._initBalance = function () {
   this._deepstreamClient.event.subscribe('initBalance', (data) => {
   const balanceRecord = this._deepstreamClient.record.getRecord(`balances/${data.userID}`);
@@ -99,17 +103,15 @@ Provider.prototype._initBalance = function () {
  */
 Provider.prototype._checkBalance = function () {
   this._deepstreamClient.event.subscribe('checkBalance', (data) => {
-    console.log('options', data);
     const balanceRecord = this._deepstreamClient.record.getRecord(`balances/${data.userID}`);
     balanceRecord.whenReady(balance => {
-      console.log('bal', balance.get());
       data.balance = +balance.get(`${data.currency}.${data.balanceType}`);
-      // if (!data.balance) {
-      //   data.balance = 0;
-      //   balance.set(`${data.currency}.available`, +data.balance);
-      //   balance.set(`${data.currency}.actual`, +data.balance);
-      // }
-      client.event.emit('returnBalance', data);
+      if (!data.balance) {
+        data.balance = 0;
+        balance.set(`${data.currency}.available`, +data.balance);
+        balance.set(`${data.currency}.actual`, +data.balance);
+      }
+      this._deepstreamClient.event.emit('returnBalance', data);
     });
     balanceRecord.discard();
   });
@@ -122,27 +124,32 @@ Provider.prototype._checkBalance = function () {
  */
 Provider.prototype._updateBalance = function () {
   this._deepstreamClient.event.subscribe('updateBalance', (data) => {
-    if (!data.update) {
-      console.log('no defined change');
-      data.update = 0;
-    }
-    const balanceRecord = this._deepstreamClient.record.getRecord(`balances/${data.userID}`);
-    balanceRecord.whenReady(balanceRecord => {
-      const change = +data.update;
-      let balance;
-      if (data.isExternal === true) {
-        balance = Big(balanceRecord.get(`${data.currency}.actual`)).plus(change);
-        balanceRecord.set(`${data.currency}.actual`, +balance);
-        balanceRecord.set(`${data.currency}.available`, +balance);
-      } else {
-        balance = Big(balanceRecord.get(`${data.currency}.${data.balanceType}`)).plus(change);
-        balanceRecord.set(`${data.currency}.${data.balanceType}`, +balance);
-      }
-      data.balance = +balance;
+    if (!data.currency || !data.balanceType) {
+      data.success = false;
       this._deepstreamClient.event.emit('returnBalance', data);
-      data.update = 0;
-    });
-    balanceRecord.discard();
+    } else  {
+      data.success = true;
+      if (!data.update) {
+        data.update = 0;
+      }
+      const balanceRecord = this._deepstreamClient.record.getRecord(`balances/${data.userID}`);
+      balanceRecord.whenReady(balanceRecord => {
+        const change = +data.update;
+        let balance;
+        if (data.isExternal === true) {
+          balance = Big(balanceRecord.get(`${data.currency}.actual`)).plus(change);
+          balanceRecord.set(`${data.currency}.actual`, +balance);
+          balanceRecord.set(`${data.currency}.available`, +balance);
+        } else {
+          balance = Big(balanceRecord.get(`${data.currency}.${data.balanceType}`)).plus(change);
+          balanceRecord.set(`${data.currency}.${data.balanceType}`, +balance);
+        }
+        data.balance = +balance;
+        this._deepstreamClient.event.emit('returnBalance', data);
+        data.update = 0;
+      });
+      balanceRecord.discard();
+    }
   });
 };
 
