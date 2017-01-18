@@ -30,7 +30,11 @@ const balances = new BalancesProvider({
     role: process.env.DEEPSTREAM_AUTH_ROLE,
     username: process.env.DEEPSTREAM_AUTH_USERNAME,
     password: process.env.DEEPSTREAM_AUTH_PASSWORD
-  } : {}
+  } : {
+    role: 'provider',
+    username: 'balances-service',
+    password: '12345'
+  }
 });
 
 balances.start();
