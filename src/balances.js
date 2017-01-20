@@ -125,26 +125,29 @@ Provider.prototype._checkBalance = function () {
 Provider.prototype._updateBalance = function () {
   this._deepstreamClient.event.subscribe('updateBalance', (data) => {
     if (!data.currency || !data.balanceType && data.isExternal === false || !data.userID) {
-      console.log('update failed')
+      console.log('update failed');
       data.success = false;
       this._deepstreamClient.event.emit('returnBalance', data);
     } else  {
-      console.log('update success')
+      console.log('update success');
       data.success = true;
       if (!data.update) {
         data.update = 0;
       }
       const balanceRecord = this._deepstreamClient.record.getRecord(`balances/${data.userID}`);
-      balanceRecord.whenReady(balanceRecord => {
-        const change = +data.update;
-        let balance;
+      balanceRecord.whenReady((record) => {
+        const change = Big(+data.update);
+        let balance = 0;
         if (data.isExternal === true) {
-          balance = Big(balanceRecord.get(`${data.currency}.actual`)).plus(change);
-          balanceRecord.set(`${data.currency}.actual`, +balance);
-          balanceRecord.set(`${data.currency}.available`, +balance);
+          
+          let currBalance = record.get(`${data.currency}.actual`) || 0;
+          console.log('data', data.currency, currBalance);
+          balance = Big(currBalance).plus(change);
+          record.set(`${data.currency}.actual`, +balance);
+          record.set(`${data.currency}.available`, +balance);
         } else {
-          balance = Big(balanceRecord.get(`${data.currency}.${data.balanceType}`)).plus(change);
-          balanceRecord.set(`${data.currency}.${data.balanceType}`, +balance);
+          balance = Big(record.get(`${data.currency}.${data.balanceType}`)).plus(change);
+          record.set(`${data.currency}.${data.balanceType}`, +balance);
         }
         data.balance = +balance;
         this._deepstreamClient.event.emit('returnBalance', data);
